@@ -23,22 +23,29 @@ RUN apt-get update && apt-get install -y \
     libpango1.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Google Chrome (new method)
+# Install Google Chrome (New Stable Method)
 RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list \
     && apt-get update \
     && apt-get install -y google-chrome-stable \
     && rm -rf /var/lib/apt/lists/*
 
-# Install ChromeDriver
-RUN CHROME_VERSION=$(google-chrome --version | grep -oE "[0-9]+\.[0-9]+\.[0-9]+") \
-    && CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION%.*}") \
+# Verify Google Chrome is Installed
+RUN google-chrome --version
+
+# Install ChromeDriver (Stable Version Matching Chrome)
+RUN CHROME_VERSION=$(google-chrome --version | awk '{print $3}') \
+    && CHROME_MAJOR_VERSION=$(echo $CHROME_VERSION | cut -d. -f1) \
+    && CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_MAJOR_VERSION") \
     && curl -s -o chromedriver.zip "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip" \
     && unzip chromedriver.zip -d /usr/local/bin \
     && rm chromedriver.zip \
     && chmod +x /usr/local/bin/chromedriver
 
-# Set working directory
+# Verify ChromeDriver is Installed
+RUN chromedriver --version
+
+# Set up working directory
 WORKDIR /app
 
 # Copy and install Python dependencies
