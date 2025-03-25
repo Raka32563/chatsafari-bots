@@ -15,13 +15,11 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install ChromeDriver
-RUN CHROME_VERSION=$(google-chrome --version | awk '{print $3}') \
-    && CHROME_MAJOR_VERSION=$(echo $CHROME_VERSION | cut -d. -f1) \
-    && echo "Installing ChromeDriver for Chrome $CHROME_MAJOR_VERSION" \
-    && CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_MAJOR_VERSION") \
-    && if [ -z "$CHROMEDRIVER_VERSION" ]; then echo "Failed to fetch ChromeDriver version!" && exit 1; fi \
-    && curl -s -o chromedriver.zip "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip" \
+RUN echo "Installing ChromeDriver for Chrome 134" \
+    && curl -s -o chromedriver.zip "https://storage.googleapis.com/chrome-for-testing-public/134.0.6998.165/linux64/chromedriver-linux64.zip" \
     && unzip chromedriver.zip -d /usr/local/bin/ \
+    && mv /usr/local/bin/chromedriver-linux64/chromedriver /usr/local/bin/ \
+    && rm -rf /usr/local/bin/chromedriver-linux64 \
     && rm chromedriver.zip \
     && chmod +x /usr/local/bin/chromedriver
 
