@@ -1,11 +1,10 @@
 FROM python:3.9-slim
 
-# Install required dependencies
+# Install dependencies
 RUN apt-get update && apt-get install -y \
-    wget \
+    curl \
     gnupg \
     unzip \
-    curl \
     xvfb \
     ca-certificates \
     libnss3 \
@@ -24,10 +23,9 @@ RUN apt-get update && apt-get install -y \
     libpango1.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Google Chrome
-RUN wget -q -O /usr/share/keyrings/google-chrome.gpg https://dl.google.com/linux/linux_signing_key.pub \
-    && echo "deb [signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" \
-       | tee /etc/apt/sources.list.d/google-chrome.list \
+# Install Google Chrome (new method)
+RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list \
     && apt-get update \
     && apt-get install -y google-chrome-stable \
     && rm -rf /var/lib/apt/lists/*
@@ -35,9 +33,9 @@ RUN wget -q -O /usr/share/keyrings/google-chrome.gpg https://dl.google.com/linux
 # Install ChromeDriver
 RUN CHROME_VERSION=$(google-chrome --version | grep -oE "[0-9]+\.[0-9]+\.[0-9]+") \
     && CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION%.*}") \
-    && wget -q "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip" \
-    && unzip chromedriver_linux64.zip -d /usr/local/bin \
-    && rm chromedriver_linux64.zip \
+    && curl -s -o chromedriver.zip "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip" \
+    && unzip chromedriver.zip -d /usr/local/bin \
+    && rm chromedriver.zip \
     && chmod +x /usr/local/bin/chromedriver
 
 # Set working directory
