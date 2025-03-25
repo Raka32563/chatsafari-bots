@@ -1,17 +1,16 @@
 services:
   - type: worker
     name: chatsafari-bots
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python run_bots.py
+    env: docker
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: PYTHON_VERSION
         value: 3.9
       - key: CHROME_DRIVER_PATH
-        value: /usr/bin/chromedriver
+        value: /usr/local/bin/chromedriver
       - key: LOG_LEVEL
         value: INFO
       - key: MAX_RETRIES
         value: 3
       - key: RETRY_DELAY
-        value: 5 
+        value: 5
