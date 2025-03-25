@@ -1,5 +1,13 @@
 import random
 import time
+def run_bot():
+    while True:
+        print("Bot is active...")
+        # Your bot logic here
+        time.sleep(10)  # Prevents high CPU usage
+
+if __name__ == "__main__":
+    run_bot()
 import threading
 from selenium import webdriver
 from selenium.webdriver.common.by import By
