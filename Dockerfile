@@ -39,4 +39,4 @@ ENV DISPLAY=:99
 ENV CHROME_DRIVER_PATH=/usr/local/bin/chromedriver
 
 # Start Xvfb and run the bot
-CMD Xvfb :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & python run_bots.py
+CMD Xvfb :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & python chat_bots.py
