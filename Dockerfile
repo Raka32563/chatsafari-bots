@@ -1,56 +1,40 @@
+# Use the official Python 3.9 slim image as the base
 FROM python:3.9-slim
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
-    curl \
+    wget \
     gnupg \
     unzip \
-    xvfb \
-    ca-certificates \
-    libnss3 \
-    libx11-xcb1 \
-    libxcomposite1 \
-    libxcursor1 \
-    libxdamage1 \
-    libxfixes3 \
-    libxi6 \
-    libxtst6 \
-    libappindicator3-1 \
-    libdbusmenu-glib4 \
-    libdbusmenu-gtk3-4 \
-    libgbm1 \
-    libgtk-3-0 \
-    libpango1.0-0 \
-    && rm -rf /var/lib/apt/lists/*
+    curl \
+    xvfb
 
-# Install Google Chrome
-RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list \
+# Add Google Chrome repository & install Chrome
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google.list \
     && apt-get update \
     && apt-get install -y google-chrome-stable \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Verify Google Chrome Installation
-RUN google-chrome --version || echo "Google Chrome failed to install"
-
-# Install ChromeDriver (Matching Stable Chrome)
+# Get Chrome version & install matching ChromeDriver
 RUN CHROME_VERSION=$(google-chrome --version | awk '{print $3}') \
     && CHROME_MAJOR_VERSION=$(echo $CHROME_VERSION | cut -d. -f1) \
     && echo "Installing ChromeDriver for Chrome $CHROME_MAJOR_VERSION" \
     && CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_MAJOR_VERSION") \
-    && [ -n "$CHROMEDRIVER_VERSION" ] || (echo "Failed to fetch ChromeDriver version!" && exit 1) \
+    && if [ -z "$CHROMEDRIVER_VERSION" ]; then echo "Failed to fetch ChromeDriver version!" && exit 1; fi \
     && curl -s -o chromedriver.zip "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip" \
-    && unzip chromedriver.zip -d /usr/local/bin \
+    && unzip chromedriver.zip -d /usr/local/bin/ \
     && rm chromedriver.zip \
     && chmod +x /usr/local/bin/chromedriver
 
-# Verify ChromeDriver Installation
-RUN chromedriver --version || echo "ChromeDriver failed to install"
+# Verify Chrome and ChromeDriver installation
+RUN google-chrome --version && chromedriver --version
 
 # Set up working directory
 WORKDIR /app
 
-# Copy and install Python dependencies
+# Copy requirements and install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -60,6 +44,7 @@ COPY . .
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV DISPLAY=:99
+ENV CHROME_DRIVER_PATH="/usr/local/bin/chromedriver"
 
 # Start Xvfb and run the bot
 CMD Xvfb :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & python run_bots.py
