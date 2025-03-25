@@ -30,6 +30,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install Flask (for free Render hosting)
+RUN pip install flask gunicorn
+
 # Copy application code
 COPY . .
 
@@ -38,5 +41,10 @@ ENV PYTHONUNBUFFERED=1
 ENV DISPLAY=:99
 ENV CHROME_DRIVER_PATH=/usr/local/bin/chromedriver
 
-# Start Xvfb and run the bot
-CMD Xvfb :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & python chat_bots.py
+# Expose a port (Render requires this)
+EXPOSE 10000
+
+# Start Xvfb and run both the bot and Flask web server
+CMD Xvfb :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & \
+    gunicorn -w 1 -b 0.0.0.0:10000 flask_app:app & \
+    python chat_bots.py
