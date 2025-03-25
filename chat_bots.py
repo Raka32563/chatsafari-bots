@@ -69,7 +69,7 @@ class ChatBot:
         
     def login(self):
         try:
-            self.driver.get(TEST_CONFIG["https://chatsafari.com"])
+            self.driver.get(TEST_CONFIG["website_url"])
             
             # Wait for login form elements
             username_field = WebDriverWait(self.driver, 10).until(
