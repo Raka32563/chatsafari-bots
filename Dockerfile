@@ -47,4 +47,4 @@ EXPOSE 10000
 # Start Xvfb and run both the bot and Flask web server
 CMD Xvfb :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & \
     gunicorn -w 1 -b 0.0.0.0:10000 flask_app:app & \
-    python chat_bots.py
+    python chat_bots.py && tail -f /dev/null
